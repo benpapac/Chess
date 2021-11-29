@@ -1,0 +1,20 @@
+.board {
+	width: fit-content;
+	
+	display: grid;
+	grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+}
+.square {
+	width: 100px;
+	height: 100px;
+}
+
+.white-piece {
+	height: 80%;
+	width: 80%;
+}
+
+.black-piece {
+	height: 80%;
+	width: 80%;
+}
