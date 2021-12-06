@@ -1,107 +1,93 @@
 import { useState } from 'react';
 import "../BensBoard.css";
-import { Movement } from '../Movement';
+import { movement } from '../utilities/movement';
+import {board} from '../utilities/board';
 
 function BensBoard(props) {
-    const columns = ['A','B','C','D','E','F','G','H'];
-    const rows = ['1','2','3','4','5','6','7','8'];
-    const pieces = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
-    const currentPlayer =  'white';
-
-    const [active, setActive] = useState({
-        square: null,
-        piece: null,
-        coordinates: null
-    });
-    const [target, setTarget] = useState({
-        square: null,
-        piece: null,
-        coordinates: null
-    });
-
-
-    const makePieces = (rowIndex, colIndex) => {
-        if(rowIndex > 1 && rowIndex < 6) return;
-        let color = rowIndex <= 1 ? 'white' : 'black';
-        let thisPiece = (rowIndex === 0 || rowIndex === 7) ? pieces[colIndex]: 'pawn';
-
-        return <div className={`${color}-${thisPiece}`}> {`${color} ${thisPiece}`} </div>;
-    }
-
-    const getData = async (e) => {
-        console.log('updating...', e.target.className);
-        if(e.target.className === 'square') {
-           return {
-            class: e.target.className,
-            color: null,
+    const [gameState, setGameState] = useState({
+        newGame: true,
+        upToDate: true,
+        gameOver: false,
+        currentPlayer: 'W',
+        canMove: false,
+        check: null,
+        active : {
+            square: null,
             piece: null,
-            square: e.target.id
-            }
+            coordinates: null
+        },
+
+        target: {
+            square: null,
+            piece: null,
+            coordinates: null
+        },
+
+        slope : (newState) => {
+            let targetColIndex = board.columns.indexOf(newState.target.coordinates.column);
+            let activeColIndex = board.columns.indexOf(newState.active.coordinates.column);
+
+            return (newState.target.coordinates.row - newState.active.coordinates.row)
+                    / 
+                    (targetColIndex - activeColIndex);
+        },
+
+        currentBoard: {
+            A: {1: 'WRA', 2: 'WPA', 3: null, 4: null, 5: null, 6: null, 7: 'BPA', 8: 'BRA'},
+            B: {1: 'WNB', 2: 'WPB', 3: null, 4: null, 5: null, 6: null, 7: 'BPB', 8: 'BNB'},
+            C: {1: 'WBC', 2: 'WPC', 3: null, 4: null, 5: null, 6: null, 7: 'BPC', 8: 'BBC'},
+            D: {1: 'WQ', 2: 'WPD', 3: null, 4: null, 5: null, 6: null, 7: 'BPD', 8: 'BQ'},
+            E: {1: 'WK', 2: 'WPE', 3: null, 4: null, 5: null, 6: null, 7: 'BPE', 8: 'BK'},
+            F: {1: 'WBF', 2: 'WPF', 3: null, 4: null, 5: null, 6: null, 7: 'BPF', 8: 'BBF'},
+            G: {1: 'WNG', 2: 'WPG', 3: null, 4: null, 5: null, 6: null, 7: 'BPG', 8: 'BNG'},
+            H: {1: 'WRH', 2: 'WPH', 3: null, 4: null, 5: null, 6: null, 7: 'BPH', 8: 'BRH'},
+        },
+
+        startSquares: {
+            W: {WRA: 'A1', WNB: 'B1', WBC: 'C1', WQ: 'D1', WK: 'E1', WBF: 'F1', WNG: 'G1', WRH: 'H1', 
+                    WPA: 'A2', WPB: 'B2', WPC: 'C2', WPD: 'D2', WPE: 'E2', WPF: 'F2', WPG: 'G2', WPH: 'H2',},
+
+            B: {BRA: 'A8', BNB: 'B8', BBC: 'C8', BQ: 'D8', BK: 'E8', BBF: 'F8', BNG: 'G8', BRH: 'H8', 
+                    BPA: 'A7', BPB: 'B7', BPC: 'C7', BPD: 'D7', BPE: 'E7', BPF: 'F7', BPG: 'G7', BPH: 'H7',},
         }
-       else return {
-            class: e.target.className,
-            color: e.target.className.substring(0,5),
-            piece: e.target.className.substring(6),
-            square: e.target.parentElement.id
-        };
+
+    });
+
+
+    const render = (thisSquare, gameState) => {
+        let coordinates = board.setCoordinates(thisSquare);
+        return board.placePieces(gameState, coordinates);
     }
 
-    const getCoordinates = (square) => {
-        if(!square) return;
-        let column = columns.indexOf(square.substring(0,1));
-        let row = rows.indexOf(square.substring(1));
-
-        return {colIndex: column, rowIndex: row};
-    }
-
-    const checkSquare = (data) => {
-        console.log('checking square...', 'class =', data.class);
-        if (data.class === 'square' && active.piece) {
-            setTarget({
-                piece: null,
-                square: data.square,
-                coordinates: getCoordinates(data.square),
-            });
-            return data.square;
+     const updateSquares = async (e) => {
+        console.log('oldState: ', gameState);
+        const data = await board.getData(e);
+        let newState = await board.checkChosenSquare(data, gameState);
+        console.log(newState.active.piece, newState.target.square)
+        if(newState.active.piece && newState.target.square)  {  
+            console.log('checking move...', 'active = ', newState.active.piece.substring(1,2));
+            newState.canMove = movement[newState.active.piece.substring(1,2)](newState);
         }
-    }
-    const checkForPiece = (data) => {
-        console.log('checking color... color =', data.color);
-        if(data.class === 'square') return;
-        if(data.color === currentPlayer) {
-            console.log('setting active...');
-                setActive({
-                    piece: data.color.concat(data.piece),
-                    square: data.square,
-                    coordinates: getCoordinates(data.square),
-                });
-                return data;
+        if(newState.canMove){
+            console.log('move is allowed.');
+            newState = await board.movePiece(newState);
         }
         else {
-            if(!active.piece) return;
-            console.log('setting target...');
-            setTarget({
-                    piece: data.color.concat(data.piece),
-                    square: data.square,
-                    coordinates: getCoordinates(data.square)
-                });
-                return data;
+            //don't move the piece
+            console.log('move not allowed');
         }
-    }
-
-    const updateSquares = async (e) => {
-        const data = await getData(e);
-        checkSquare(data);
-        checkForPiece(data);
-    }
+        console.log('newState: ', newState);
+        setGameState(newState);
+}
 
     return (
         <section className='board' onClick={updateSquares}>
-            {columns.map( (column) => {
-               return rows.map( (row) => {
-                    let colIndex = columns.indexOf(column);
-                    let rowIndex = rows.indexOf(row);
+            {board.columns.map( (column) => {
+               return board.rows.map( (row) => {
+                    let colIndex = board.columns.indexOf(column);
+                    let rowIndex = board.rows.indexOf(row);
                     let color = 'cornsilk';
+                    let thisSquare = `${column}${row}`
                     if(!(rowIndex % 2)) {
                        color = (colIndex % 2) ? 'cornsilk' : 'dimgrey';
                     } else {
@@ -113,7 +99,7 @@ function BensBoard(props) {
                             id={`${column}${row}`}
                             style={{background:`${color}`}}
                             >
-                                {makePieces(rowIndex, colIndex)}
+                                {render(thisSquare, gameState)}
                             </div>
             })  
             })}
