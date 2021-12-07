@@ -88,10 +88,74 @@ export const movement = {
         return (Math.abs( movement.slope(newState) ) === 2 
                 || Math.abs( movement.slope(newState) ) === 1/2);
     },
-
+    
     R: (newState) => {
+        console.log('slope = ',movement.slope(newState));
+        let targetColIndex = board.columns.indexOf(newState.target.coordinates.column);
+        let activeColIndex = board.columns.indexOf(newState.active.coordinates.column);
+
+        let targetRow = newState.target.coordinates.row;
+        let activeRow = newState.active.coordinates.row;
+        let rowIndex = board.rows.indexOf(activeRow);
+
+        if (
+            Math.abs(movement.slope(newState) ) !== 0 
+            && Math.abs( movement.slope(newState) ) !== Infinity
+            )
+            return false;
+            //if we didn't move at all, get out.
         if( newState.active.coordinates.column === newState.target.coordinates.column && newState.active.coordinates.row === newState.target.coordinates.row) return false;
-        return (movement.slope(newState) === 0);
+
+        //if we moved on one axis, but not the other, we're good.
+        console.log(movement.slope(newState));
+        //if slope is infinity, what's the cleanest way to check for obstacles along that path?
+        
+        // if there is a piece between the active and target space on the column 
+        // if moving up
+        if(movement.slope(newState) === Infinity){
+            console.log('moving up...');
+            for(let i = 1; i < (targetColIndex - activeColIndex); i++){
+                let thisRow = board.rows[rowIndex +i];
+                let thisCol = board.columns[activeColIndex];
+                //get the coordinates of i square.
+                if(newState.currentBoard[thisCol][thisRow]) return false;
+            }
+        }
+        
+        // if moving down 
+        if(movement.slope(newState) === -Infinity){
+            console.log('moving down...');
+            for(let i = 1; i < (targetColIndex - activeColIndex); i++){
+                let thisRow = board.rows[rowIndex -i];
+                let thisCol = board.columns[activeColIndex];
+                //get the coordinates of i square.
+                if(newState.currentBoard[thisCol][thisRow]) return false;
+            }
+        }
+
+        // if moving right
+        if(movement.slope(newState) === 0){
+            console.log('moving right...');
+            for(let i = 1; i < (targetColIndex - activeColIndex); i++){
+                let thisRow = board.rows[rowIndex];
+                let thisCol = board.columns[activeColIndex +i];
+                //get the coordinates of i square.
+                if(newState.currentBoard[thisCol][thisRow]) return false;
+            }
+        }
+
+        //if moving left
+        if(movement.slope(newState) === -0){
+            console.log('moving right...');
+
+            for(let i = 1; i < (targetColIndex - activeColIndex); i++){
+                let thisRow = board.rows[rowIndex];
+                let thisCol = board.columns[activeColIndex -i];
+                //get the coordinates of i square.
+                if(newState.currentBoard[thisCol][thisRow]) return false;
+            }
+        }
+        return true;
     },
 
     P: (newState) => {
