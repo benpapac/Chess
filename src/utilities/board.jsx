@@ -1,15 +1,14 @@
 
 export const board = {
-    rows : ['1','2','3','4','5','6','7','8'],
+    rows : [1,2,3,4,5,6,7,8],
     columns : ['A','B','C','D','E','F','G','H'],
     pieces: ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'],
 
     placePieces : (gameState, coordinates) => {
         let thisPiece = gameState.currentBoard[coordinates.column][coordinates.row];
         if(thisPiece === null) return;
-        let color = thisPiece.substring(0,1);
             return (
-                <div className={`${thisPiece}`} id={`${gameState.startSquares[color][thisPiece]}`}>
+                <div id={`${thisPiece}`}>
                         {`${thisPiece}`}
                 </div>
                );
@@ -57,7 +56,6 @@ export const board = {
             console.log('setting active...');
             return {
                 ...newState,
-                upToDate: false,
                 active: {
                 piece: data.piece,
                 square: data.square,
@@ -87,7 +85,7 @@ export const board = {
     },
     
     getData : async (e) => {
-        console.log('updating...', e.target.className);
+        console.log('updating...', e);
         if(e.target.className === 'square') {
             return {
                 class: e.target.className,
@@ -96,11 +94,10 @@ export const board = {
             }
         }
         else return {
-            class: e.target.className,
-            color: e.target.className.substring(0,1),
-            piece: e.target.className,
+            color: e.target.id.substring(0,1),
+            piece: e.target.id,
             square: e.target.parentElement.id,
-            startSquare: e.target.id
+            startSquare: e.target.id.substring(2),
         };
     },
     
