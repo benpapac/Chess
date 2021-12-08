@@ -125,7 +125,7 @@ export const movement = {
         // if moving down 
         if(movement.slope(newState) === -Infinity){
             console.log('moving down...');
-            for(let i = 1; i < (targetRow - activeRow); i++){
+            for(let i = 1; i < Math.abs(targetRow - activeRow); i++){
                 let thisRow = board.rows[rowIndex -i];
                 let thisCol = board.columns[activeColIndex];
                 //get the coordinates of i square.
@@ -135,7 +135,7 @@ export const movement = {
         }
 
         // if moving right
-        if(movement.slope(newState) === 0){
+        if(targetColIndex - activeColIndex > 0){
             console.log('moving right...');
             for(let i = 1; i < (targetColIndex - activeColIndex); i++){
                 let thisRow = board.rows[rowIndex];
@@ -146,10 +146,10 @@ export const movement = {
         }
 
         //if moving left
-        if(movement.slope(newState) === -0){
+        if(targetColIndex - activeColIndex < 0){
             console.log('moving right...');
 
-            for(let i = 1; i < (targetColIndex - activeColIndex); i++){
+            for(let i = 1; i < Math.abs(targetColIndex - activeColIndex); i++){
                 let thisRow = board.rows[rowIndex];
                 let thisCol = board.columns[activeColIndex -i];
                 //get the coordinates of i square.
