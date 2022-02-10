@@ -1,32 +1,13 @@
-import { useState } from 'react';
+import { useReducer } from 'react';
 import "../BensBoard.css";
 import { movement } from '../utilities/movement';
-import {board} from '../utilities/board';
+import {boardUtil} from '../utilities/boardUtil';
+import {reducers} from '../utilities/reducers.js';
 
 function BensBoard(props) {
-    const [gameState, setGameState] = useState({
-        gameOver: false,
-        currentPlayer: 'W',
-        canMove: false,
-        check: null,
-        active : {
-            square: null,
-            piece: null,
-            coordinates: null
-        },
-
-        target: {
-            square: null,
-            piece: null,
-            coordinates: null
-        },
-
-        kingHasMoved: {
-            'W': false,
-            'B': false,
-        },
-
-        currentBoard: {
+ 
+    const [board, boardDispatch] = useReducer(reducers.boardReducer, 
+         {
             A: {1: 'WRA1', 2: 'WPA2', 3: null, 4: null, 5: null, 6: null, 7: 'BPA7', 8: 'BRA8'},
             B: {1: 'WNB1', 2: 'WPB2', 3: null, 4: null, 5: null, 6: null, 7: 'BPB7', 8: 'BNB8'},
             C: {1: 'WBC1', 2: 'WPC2', 3: null, 4: null, 5: null, 6: null, 7: 'BPC7', 8: 'BBC8'},
@@ -35,40 +16,61 @@ function BensBoard(props) {
             F: {1: 'WBF1', 2: 'WPF2', 3: null, 4: null, 5: null, 6: null, 7: 'BPF7', 8: 'BBF8'},
             G: {1: 'WNG1', 2: 'WPG2', 3: null, 4: null, 5: null, 6: null, 7: 'BPG7', 8: 'BNG8'},
             H: {1: 'WRH1', 2: 'WPH2', 3: null, 4: null, 5: null, 6: null, 7: 'BPH7', 8: 'BRH8'},
-        },
+        }
+        );
 
+    const [hasMoved, hasMovedDispatch] = useReducer(reducers.hasMoved, []);
+
+    const [squares, squaresDispatch] = useReducer(reducers.squaresReducer,  
+        {
+            active : {
+            square: null,
+            piece: null,
+            coordinates: null
+            },
+
+            target: {
+            square: null,
+            piece: null,
+            coordinates: null
+            },
+        });
+
+    const [player, playerDispatch] = useReducer(reducers.playerReducer, {
+            color: 'W',
+            canCastle: {
+                long: true,
+                short: true,
+            },
+            inCheck: false,
+            canMove: false,
     });
 
-    const render = (thisSquare, gameState) => {
+    const render = (thisSquare, board) => {
         let coordinates = board.setCoordinates(thisSquare);
-        return board.placePieces(gameState, coordinates);
+        return boardUtil.placePieces(board, coordinates);
     }
 
-     const updateSquares = async (e) => {
-        console.log('oldState: ', gameState);
-        const data = await board.getData(e);
-        let newState = await board.checkChosenSquare(data, gameState);
+    const updateSquares = async (e) => {
+        const data = await boardUtil.getData(e);
+        squaresDispatch(boardUtil.checkSquare(data, player, squares));
 
-        if(newState.active.piece && newState.target.square)  {  
-            let activePiece = newState.active.piece.substring(1,2);
-            console.log('checking move...', 'active = ', activePiece);
+        if(squares.active.piece && squares.target.square) {
+            let activePiece = squares.active.piece.substring(1,3);
 
-           if( movement[activePiece](newState) ){
-            console.log('move is allowed.');
-            newState = await board.movePiece(newState);
-             }
-           };
-           console.log('newState: ', newState);
-           setGameState(newState);
+            if(movement[activePiece[0]](board, squares)){
+                boardDispatch(boardUtil.movePiece(squares));
+                hasMovedDispatch({type: 'MOVE', action: activePiece});
+            }
         }
-
+    }
 
     return (
         <section className='board' onClick={updateSquares}>
             {board.columns.map( (column) => {
                return board.rows.map( (row) => {
-                    let colIndex = board.columns.indexOf(column);
-                    let rowIndex = board.rows.indexOf(row);
+                    let colIndex = boardUtil.columns.indexOf(column);
+                    let rowIndex = boardUtil.rows.indexOf(row);
                     let color = 'cornsilk';
                     let thisSquare = `${column}${row}`
                     if(!(rowIndex % 2)) {
@@ -82,7 +84,7 @@ function BensBoard(props) {
                             id={`${column}${row}`}
                             style={{background:`${color}`}}
                             >
-                                {render(thisSquare, gameState)}
+                                {render(thisSquare, board)}
                             </div>
             })  
             })}
