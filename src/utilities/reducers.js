@@ -33,6 +33,13 @@ export const reducers = {
 						...action.value,
 					},
 				};
+			case 'NEWKING':
+				return {
+					...state,
+					king: {
+						...action.value,
+					},
+				};
 			case 'NEWACTIVE':
 				//update the active data
 				return {
