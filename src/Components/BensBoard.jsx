@@ -2,7 +2,7 @@ import { useReducer } from 'react';
 import "../BensBoard.css";
 import { movement } from '../utilities/movement';
 import { boardUtil } from '../utilities/boardUtil';
-import { inCheck } from '../utilities.chckUtil';
+import { checkUtil } from '../utilities/checkUtil';
 import { reducers } from '../utilities/reducers.js';
 import { useEffect } from 'react/cjs/react.production.min';
 
@@ -42,6 +42,8 @@ function BensBoard(props) {
                 piece: null,
                 coordinates: null
             },
+
+            cancel: false,
         });
 
     const [player, playerDispatch] = useReducer(reducers.playerReducer, {
@@ -56,22 +58,35 @@ function BensBoard(props) {
 
 
     const render = (thisSquare, board) => {
-        let coordinates = board.setCoordinates(thisSquare);
+        let coordinates = boardUtil.setCoordinates(thisSquare);
         return boardUtil.placePieces(board, coordinates);
     }
 
     const updateSquares = async (e) => {
-        const inCheck = inCheck(board, squares, player);
-        console.log(inCheck);
-        const data = await boardUtil.getData(e);
-        squaresDispatch(boardUtil.checkSquare(data, player, squares));
 
-        if (squares.active.piece && squares.target.square) {
+
+        const inCheck = checkUtil.inCheck(board, squares, player);
+        const data = await boardUtil.getData(e);
+
+
+        await squaresDispatch(boardUtil.checkSquare(data, player, squares));
+        let dispatch = await boardUtil.checkSquare(data, player, squares);
+
+
+        //right here is where the trouble starts. Even thought squares has been updated with a new target, the function called on line 81 checks squares too soon to see it.
+
+        //i could solve this by using a mutable object, but that defeats the purpose of the reducer hooks.
+
+        if (dispatch.type === 'NEWTARGET') {
+            console.log('checking move...');
             let activePiece = squares.active.piece.substring(0, 2);
 
+            console.log('squares: ',squares);
             if (!(movement[activePiece[1]](board, squares))) {
-                boardDispatch(boardUtil.movePiece(squares));
+                boardDispatch(boardUtil.movePiece(board, squares));
+                dispatch = boardUtil.movePiece(board, squares);
                 hasMovedDispatch({ type: 'MOVE', action: activePiece });
+
                 if(activePiece[1] === 'K') squaresDispatch(
                     {
                         type: 'NEWKING', 
@@ -89,8 +104,8 @@ function BensBoard(props) {
 
     return (
         <section className='board' onClick={updateSquares}>
-            {board.columns.map((column) => {
-                return board.rows.map((row) => {
+            {boardUtil.columns.map((column) => {
+                return boardUtil.rows.map((row) => {
                     let colIndex = boardUtil.columns.indexOf(column);
                     let rowIndex = boardUtil.rows.indexOf(row);
                     let color = 'cornsilk';

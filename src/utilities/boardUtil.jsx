@@ -42,13 +42,8 @@ export const boardUtil = {
     
     checkSquare : (data, currentPlayer, squares) => {
         if(data.piece === squares.active.piece) return {
-            type: 'CANCEL',
-            value: {
-                piece: null,
-                square: null,
-                coordinates: null,
+            type: 'CANCEL'
             }
-        };
         else if(data.class === 'square' && squares.active.piece) return {
             type: 'NEWTARGET',
             value: {
@@ -59,7 +54,11 @@ export const boardUtil = {
         };
 
         else if(data.color === currentPlayer.color) {
-            if(squares.active.piece.substring(1,2) === 'K'
+            console.log('same color.');
+
+           
+            if(
+                (squares.active.piece && squares.active.piece.substring(1,2) === 'K')
                 &&
                 data.piece.substring(1,2) === 'R'){
                 return {

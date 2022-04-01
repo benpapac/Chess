@@ -29,9 +29,7 @@ export const reducers = {
 			case 'CANCEL':
 				return {
 					...state,
-					active: {
-						...action.value,
-					},
+					cancel: true,
 				};
 			case 'NEWKING':
 				return {
@@ -39,6 +37,7 @@ export const reducers = {
 					king: {
 						...action.value,
 					},
+					cancel: false,
 				};
 			case 'NEWACTIVE':
 				//update the active data
@@ -47,6 +46,12 @@ export const reducers = {
 					active: {
 						...action.value,
 					},
+					target: {
+						square: null,
+                		piece: null,
+                		coordinates: null
+					},
+					cancel: false,
 				};
 			case 'NEWTARGET':
 				//update the target data
@@ -55,6 +60,7 @@ export const reducers = {
 					target: {
 						...action.value,
 					},
+					cancel: false,
 				};
 			default:
 				return state;

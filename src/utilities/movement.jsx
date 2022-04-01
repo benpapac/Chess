@@ -185,8 +185,8 @@ export const movement = {
         return movement.findFirstPiece(board, squares);
     },
 
-    P: (squares) => {
-        if (squares.target.piece !== null) {
+    P: (board, squares) => {
+        if (squares.target.piece) {
             if (squares.active.piece.substring(0, 1) === 'W') {
                 return (
                     squares.target.coordinates.row === squares.active.coordinates.row + 1
