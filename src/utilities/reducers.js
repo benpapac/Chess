@@ -48,8 +48,8 @@ export const reducers = {
 					},
 					target: {
 						square: null,
-                		piece: null,
-                		coordinates: null
+						piece: null,
+						coordinates: null,
 					},
 					cancel: false,
 				};

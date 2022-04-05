@@ -67,25 +67,51 @@ function BensBoard(props) {
 
         const inCheck = checkUtil.inCheck(board, squares, player);
         const data = await boardUtil.getData(e);
-
-
+        
+        
         await squaresDispatch(boardUtil.checkSquare(data, player, squares));
         let dispatch = await boardUtil.checkSquare(data, player, squares);
+        
+        
+        //right here is where the trouble starts. Even though squares has been updated with a new target, the function called on line 81 checks squares too soon to see it.
+        
+        //I solve this by using a mutable object, but that defeats the purpose of the reducer hooks.
 
-
-        //right here is where the trouble starts. Even thought squares has been updated with a new target, the function called on line 81 checks squares too soon to see it.
-
-        //i could solve this by using a mutable object, but that defeats the purpose of the reducer hooks.
-
+        const newType = () => {
+            switch (dispatch.type) {
+                case 'NEWTARGET':
+                    return 'target';
+                case 'NEWACTIVE':
+                    return 'active';
+                case 'NEWKING':
+                    return 'king';
+            
+                default:
+                    return null;
+            }
+        }
+        
+        let action = dispatch.value;
+        let newSquares = {
+            ...squares, 
+            [`${newType()}`]: action,
+        }
+        console.log('newSquares: ', newSquares);
         if (dispatch.type === 'NEWTARGET') {
-            console.log('checking move...');
             let activePiece = squares.active.piece.substring(0, 2);
-
-            console.log('squares: ',squares);
-            if (!(movement[activePiece[1]](board, squares))) {
-                boardDispatch(boardUtil.movePiece(board, squares));
-                dispatch = boardUtil.movePiece(board, squares);
+            if (!(movement[activePiece[1]](board, newSquares))) {
+                boardDispatch(boardUtil.movePiece(board, newSquares));
+                // dispatch = boardUtil.movePiece(board, newSquares);
                 hasMovedDispatch({ type: 'MOVE', action: activePiece });
+
+                let newColor = player.color === 'W' ? 'B' : 'W';
+                playerDispatch({
+                    type:'MOVE', 
+                    action: {
+                        ...player,
+                        'color': newColor,
+                    }
+                })
 
                 if(activePiece[1] === 'K') squaresDispatch(
                     {

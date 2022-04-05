@@ -15,19 +15,37 @@ export const boardUtil = {
     },
 
     movePiece : (board, squares) => {
-        let activeCol = [squares.active.coordinates.column];
-        let targetCol = [squares.target.coordinates.column];
+        console.log({[`${squares.active.coordinates.column}`]: {
+                    ...board[`${squares.active.coordinates.column}`],
+                [`${squares.active.coordinates.row}`]: null,
+                },});
 
-        return { type: 'MOVE',
+
+        if(squares.active.coordinates.column === squares.target.coordinates.column){
+
+            return { type: 'MOVE',
             value: {
                 ...board,
-                activeCol: {
-                ...activeCol,
-                activeRow: null,
+                [`${squares.target.coordinates.column}`]: {
+                    ...board[`${squares.target.coordinates.column}`],
+                    [`${squares.active.coordinates.row}`]: null,
+                    [`${squares.target.coordinates.row}`]: squares.active.piece,
+                }
+            }
+        }
+
+        }
+        else return { type: 'MOVE',
+            value: {
+                ...board,
+                [`${squares.active.coordinates.column}`]: {
+                    ...board[`${squares.active.coordinates.column}`],
+                [`${squares.active.coordinates.row}`]: null,
                 },
-                targetCol: {
-                    ...targetCol,
-                    targetRow: squares.active.piece,
+                [`${squares.target.coordinates.column}`]: {
+                    ...board[`${squares.target.coordinates.column}`],
+
+                    [`${squares.target.coordinates.row}`]: squares.active.piece,
                 }
             }
         }
