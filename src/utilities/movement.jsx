@@ -174,23 +174,27 @@ export const movement = {
     },
 
     Q: (board, squares) => {
+        console.log('slope = ', Math.abs(movement.slope(squares)));
         switch (Math.abs(movement.slope(squares))) {
             case 1:
+                console.log('case 1');
                 return movement.B(board, squares);
             case Infinity: 
+                console.log('case Infinity');
             return (movement.R(board, squares));
-
             case 0:
+                console.log('case 0');
                 return (movement.R(board, squares));
         
             default:
-                return board[squares.target.coordinates.column][squares.target.coordinates.row];
+                console.log('case default');
+                return squares.active.piece;
         }
     },
 
     B: (board, squares) => {
         console.log('checking bishop');
-        if (Math.abs(movement.slope(squares)) !== 1) return true;
+        if (Math.abs(movement.slope(squares)) !== 1) return movement.slope(squares);
         return movement.findFirstPiece(board, squares);
     },
 
