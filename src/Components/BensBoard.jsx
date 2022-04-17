@@ -1,10 +1,11 @@
-import { useReducer } from 'react';
+import { useReducer, useEffect } from 'react';
 import "../BensBoard.css";
 import { movement } from '../utilities/movement';
 import { boardUtil } from '../utilities/boardUtil';
 import { checkUtil } from '../utilities/checkUtil';
+import { updaters } from '../utilities/updaters';
 import { reducers } from '../utilities/reducers.js';
-import { useEffect } from 'react/cjs/react.production.min';
+
 
 function BensBoard(props) {
 
@@ -25,19 +26,24 @@ function BensBoard(props) {
 
     const [squares, squaresDispatch] = useReducer(reducers.squaresReducer,
         {
-            king: {
-                square: 'E1',
-                piece: board['E'][1],
-                coordinates: {column: 'E', row: 1}
+            kings: {
+                whiteKingSquare: 'E1',
+                whiteKingPiece: board['E'][1],
+                whiteKingCoordinates: {column: 'E', row: 1},
+                blackKingSquare: 'E8',
+                blackKingPiece: board['E'][8],
+                blackKingCoordinates: {column: 'E', row: 8}
             },
             
             active: {
+                startSquare: null,
                 square: null,
                 piece: null,
                 coordinates: null
             },
 
             target: {
+                startSquare: null,
                 square: null,
                 piece: null,
                 coordinates: null
@@ -56,80 +62,72 @@ function BensBoard(props) {
         canMove: false,
     });
 
+    useEffect ( () => {
+        let activePiece = squares.active.piece ?
+                squares.active.piece.substring(0, 2)
+                : null;
+
+        let targetSquare = squares.target.square;
+
+        // console.log('active: ', activePiece, 'target: ', target)
+        console.log('squares.target: ', squares.target);
+                
+        if(!activePiece) return;
+        if(targetSquare) {
+            //do stuff.
+            console.log('squares: ', squares);
+            if (!(movement[activePiece[1]](board, squares, hasMoved))) {
+                boardDispatch(boardUtil.movePiece(board, squares));
+                hasMovedDispatch({ type: 'MOVE', value: squares.active.piece });
+                
+                playerDispatch(updaters.updatePlayer(player));
+                console.log('playerDispatch: ', updaters.updatePlayer(player));
+                
+            }
+                // let newKings = activePiece[1] === 'K' ? 
+                //     boardUtil.updateKings(squares, activePiece)
+                //     : squares.kings;
+
+                // console.log('newKings: ',newKings);
+                // console.log('kings: ',squares.kings);
+
+                // squaresDispatch({ type: 'NEWTURN', action: {
+				// 	...squares,
+
+				// 	active: {
+				// 		square: null,
+				// 		piece: null,
+				// 		coordinates: null,
+				// 	},
+
+				// 	target: {
+				// 		square: null,
+				// 		piece: null,
+				// 		coordinates: null,
+				// 	},
+
+				// 	cancel: false,
+                // }}
+                // )
+            }
+    }, [squares]);
 
     const render = (thisSquare, board) => {
         let coordinates = boardUtil.setCoordinates(thisSquare);
         return boardUtil.placePieces(board, coordinates);
     }
 
-    const updateSquares = async (e) => {
-
-
+    const updateGameState = async (e) => {
+        // console.log('squares: ', squares);
         const inCheck = checkUtil.inCheck(board, squares, player);
-        const data = await boardUtil.getData(e);
+        //first, what did the player click on? Let's get the data.
+        const data = await updaters.getClickData(e);
         
+        squaresDispatch(boardUtil.checkSquare(data, player, squares));
         
-        await squaresDispatch(boardUtil.checkSquare(data, player, squares));
-        let dispatch = await boardUtil.checkSquare(data, player, squares);
-        
-        
-        //right here is where the trouble starts. Even though squares has been updated with a new target, the function called on line 81 checks squares too soon to see it.
-        
-        //I solve this by using a mutable object, but that defeats the purpose of the reducer hooks.
-
-        const newType = () => {
-            switch (dispatch.type) {
-                case 'NEWTARGET':
-                    return 'target';
-                case 'NEWACTIVE':
-                    return 'active';
-                case 'NEWKING':
-                    return 'king';
-            
-                default:
-                    return null;
-            }
-        }
-        
-        let action = dispatch.value;
-        let newSquares = {
-            ...squares, 
-            [`${newType()}`]: action,
-        }
-        console.log('newSquares: ', newSquares);
-        if (dispatch.type === 'NEWTARGET') {
-            let activePiece = squares.active.piece.substring(0, 2);
-            if (!(movement[activePiece[1]](board, newSquares))) {
-                boardDispatch(boardUtil.movePiece(board, newSquares));
-                // dispatch = boardUtil.movePiece(board, newSquares);
-                hasMovedDispatch({ type: 'MOVE', action: activePiece });
-
-                let newColor = player.color === 'W' ? 'B' : 'W';
-                playerDispatch({
-                    type:'MOVE', 
-                    action: {
-                        ...player,
-                        'color': newColor,
-                    }
-                })
-
-                if(activePiece[1] === 'K') squaresDispatch(
-                    {
-                        type: 'NEWKING', 
-                        value: {
-                            king: {
-                                square: squares.target.square,
-                                piece: squares.active.piece,
-                                coordinates: squares.target.coordinates,
-                            }
-                        }
-                    })
-            }
-        }
     }
-
     return (
-        <section className='board' onClick={updateSquares}>
+        <section className='board' onClick={updateGameState}>
             {boardUtil.columns.map((column) => {
                 return boardUtil.rows.map((row) => {
                     let colIndex = boardUtil.columns.indexOf(column);

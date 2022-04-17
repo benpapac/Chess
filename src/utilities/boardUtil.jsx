@@ -15,12 +15,6 @@ export const boardUtil = {
     },
 
     movePiece : (board, squares) => {
-        console.log({[`${squares.active.coordinates.column}`]: {
-                    ...board[`${squares.active.coordinates.column}`],
-                [`${squares.active.coordinates.row}`]: null,
-                },});
-
-
         if(squares.active.coordinates.column === squares.target.coordinates.column){
 
             return { type: 'MOVE',
@@ -66,15 +60,13 @@ export const boardUtil = {
             type: 'NEWTARGET',
             value: {
                 piece: data.piece,
+                startSquare: data.startSquare,
                 square: data.square,
                 coordinates: data.coordinates,
             }
         };
 
         else if(data.color === currentPlayer.color) {
-            console.log('same color.');
-
-           
             if(
                 (squares.active.piece && squares.active.piece.substring(1,2) === 'K')
                 &&
@@ -83,6 +75,7 @@ export const boardUtil = {
                     type: 'NEWTARGET',
                     value: {
                         piece: data.piece,
+                        startSquare: data.startSquare,
                         square: data.square,
                         coordinates: data.coordinates,
                     }
@@ -92,6 +85,7 @@ export const boardUtil = {
             type: 'NEWACTIVE',
             value: {
                 piece: data.piece,
+                startSquare: data.startSquare,
                 square: data.square,
                 coordinates: data.coordinates,
             }
@@ -103,6 +97,7 @@ export const boardUtil = {
             type: 'NEWTARGET',
             value: {
                 piece: data.piece,
+                startSquare: data.startSquare,
                 square: data.square,
                 coordinates: data.coordinates,
             }
@@ -110,22 +105,6 @@ export const boardUtil = {
         }
     },
     
-    getData : async (e) => {
-        console.log('updating...', e);
-        if(e.target.className === 'square') {
-            return {
-                class: e.target.className,
-                piece: null,
-                square: e.target.id,
-                coordinates: boardUtil.setCoordinates(e.target.id),
-            }
-        }
-        else return {
-            color: e.target.id.substring(0,1),
-            piece: e.target.id,
-            square: e.target.parentElement.id,
-            coordinates: boardUtil.setCoordinates(e.target.parentElement.id),
-        };
-    },
+    
     
 }

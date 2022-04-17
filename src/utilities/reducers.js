@@ -34,7 +34,7 @@ export const reducers = {
 			case 'NEWKING':
 				return {
 					...state,
-					king: {
+					kings: {
 						...action.value,
 					},
 					cancel: false,
@@ -61,6 +61,10 @@ export const reducers = {
 						...action.value,
 					},
 					cancel: false,
+				};
+			case 'NEWTURN':
+				return {
+					...action.value,
 				};
 			default:
 				return state;

@@ -113,8 +113,6 @@ export const checkUtil = {
 				(kingRow - i >= 1 && kingColIndex + i >= boardColLength);
 				i++
 				) {
-					let downRow = kingRow - i;
-					let upRow = kingRow + i;
 					
 					let downColIndex = kingColIndex - i;
 					let downCol = boardUtil.columns[downColIndex];
@@ -149,14 +147,15 @@ export const checkUtil = {
 			},
 			
 			 inCheck: (board, squares, player) => {
+				const king = player.color === 'B' ? 'blackKing' : 'whiteKing';
+				console.log('kings: ', squares);
 				
 				let kingData = {
-					kingRow: squares.king.coordinates.row,
-					kingCol: squares.king.coordinates.column,
-					kingColIndex: boardUtil.columns.indexOf(squares.king.coordinates.column),
+					kingRow: squares.kings[`${king}Coordinates`].row,
+					kingCol: squares.kings[`${king}Coordinates`].column,
+					kingColIndex: boardUtil.columns.indexOf(squares.kings[`${king}Coordinates`].column),
 					boardColLength: (boardUtil.columns.length - 1)
 				}
-				console.log(kingData);
 				
 				let foundPieces = {};
 				
@@ -171,6 +170,6 @@ export const checkUtil = {
 				check for Knights
 				*/
 				
-				// return foundPieces.length ? foundPieces : false;
+				return foundPieces.length ? foundPieces : false;
 			}
 		}
